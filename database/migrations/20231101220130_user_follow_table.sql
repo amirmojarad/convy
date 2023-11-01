@@ -7,7 +7,7 @@ create table user_follow (
     updated_at timestamp default current_timestamp,
     deleted_at timestamp default null,
     constraint fk_follower foreign key (follower) references users(id) on delete cascade,
-    constraint fk_following foreign key (following) references users(id) on delete cascade,
+    constraint fk_following foreign key (following) references users(id) on delete cascade
 );
 -- +goose StatementBegin
 SELECT 'up SQL query';
