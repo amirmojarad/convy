@@ -7,6 +7,8 @@ import (
 )
 
 type UserRepository interface {
+	CreateUser(ctx context.Context, req UserModel) (UserModel, error)
+	GetUser(ctx context.Context, req GetUserRequest) (UserModel, error)
 }
 
 type UserService struct {
@@ -24,7 +26,26 @@ func NewUser(cfg *conf.AppConfig, logger *logrus.Entry, userRepository UserRepos
 }
 
 func (u UserService) CreateUser(ctx context.Context, req CreateUserRequest) (CreateUserResponse, error) {
-	return CreateUserResponse{}, nil
+	fetchedUser, err := u.userRepository.GetUser(ctx, GetUserRequest{Username: req.Username, Email: req.Email})
+	if err != nil {
+		return CreateUserResponse{}, err
+	}
+
+	if fetchedUser.ID > 0 {
+		return CreateUserResponse{}, err
+	}
+
+	req.Password, err = HashPassword(req.Password)
+	if err != nil {
+		return CreateUserResponse{}, err
+	}
+
+	createdUser, err := u.userRepository.CreateUser(ctx, toUserModel(req))
+	if err != nil {
+		return CreateUserResponse{}, err
+	}
+
+	return CreateUserResponse{UserModel: createdUser}, nil
 }
 
 func (u UserService) GetUser(ctx context.Context, req GetUserRequest) (GetUserResponse, error) {
