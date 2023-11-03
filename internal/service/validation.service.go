@@ -39,7 +39,7 @@ func (v ValidationBuilder) SetEmail(email string) *ValidationBuilder {
 func (v ValidationBuilder) SetPassword(password string) *ValidationBuilder {
 	v.password.value = password
 	v.password.validator = func(a any) bool {
-		passwordRegex := regexp.MustCompile(`^(.*[a-z])(.*[A-Z])(.*\d).{6,}$`)
+		passwordRegex := regexp.MustCompile(`^[0-9a-zA-Z]{6,}$`)
 		return passwordRegex.MatchString(a.(string))
 	}
 	return &v

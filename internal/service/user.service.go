@@ -52,7 +52,30 @@ func (u UserService) CreateUser(ctx context.Context, req CreateUserRequest) (Cre
 }
 
 func (u UserService) GetUser(ctx context.Context, req GetUserRequest) (GetUserResponse, error) {
-	return GetUserResponse{}, nil
+	_, err := NewValidation().
+		SetUsername(req.Username).
+		SetEmail(req.Email).
+		SetPassword(req.Password).
+		Validate()
+
+	if err != nil {
+		u.logger.Error(err)
+
+		return GetUserResponse{}, err
+	}
+
+	fetchedUser, err := u.userRepository.GetUser(ctx, toRepoGetUserRequest(req))
+	if err != nil {
+		return GetUserResponse{}, err
+	}
+
+	if !CheckPasswordHash(req.Password, fetchedUser.HashedPassword) {
+		return GetUserResponse{}, errorext.NewValidationError("password is invalid")
+	}
+
+	return GetUserResponse{
+		UserModel: toSvcUserModel(fetchedUser),
+	}, nil
 }
 
 func (u UserService) UpdateUserInformation(ctx context.Context, req UpdateUserInformationRequest) (

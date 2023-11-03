@@ -26,3 +26,10 @@ func toSvcUserModel(req repository.UserModel) UserModel {
 		LastLogin:      req.LastLogin,
 	}
 }
+
+func toRepoGetUserRequest(req GetUserRequest) repository.GetUserRequest {
+	return repository.GetUserRequest{
+		Email:    req.Email,
+		Username: req.Username,
+	}
+}
