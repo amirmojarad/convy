@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"convy/internal/service"
 	"gorm.io/gorm"
 )
 
@@ -14,17 +13,17 @@ func NewUser(db *gorm.DB) *User {
 	return &User{db: db}
 }
 
-func (u User) CreateUser(ctx context.Context, req service.UserModel) (service.UserModel, error) {
-	userModel := NewFromUserModelSvc(req)
+func (u User) CreateUser(ctx context.Context, req UserModel) (UserModel, error) {
+	var userModel UserModel
 
 	if err := u.db.WithContext(ctx).Model(&UserModel{}).Create(&userModel).Error; err != nil {
-		return service.UserModel{}, err
+		return UserModel{}, err
 	}
 
-	return userModel.castToUserModelSvc(), nil
+	return userModel, nil
 }
 
-func (u User) GetUser(ctx context.Context, req service.GetUserRequest) (service.UserModel, error) {
+func (u User) GetUser(ctx context.Context, req GetUserRequest) (UserModel, error) {
 	var userModel UserModel
 
 	query := u.db.WithContext(ctx).Model(&UserModel{})
@@ -38,8 +37,8 @@ func (u User) GetUser(ctx context.Context, req service.GetUserRequest) (service.
 	}
 
 	if err := query.Find(&userModel).Error; err != nil {
-		return service.UserModel{}, err
+		return UserModel{}, err
 	}
 
-	return userModel.castToUserModelSvc(), nil
+	return userModel, nil
 }
