@@ -8,8 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const AuthUserIDHeaderKey = "X-Auth-User-Id"
-
 func WriteErrorResponse(ctx *gin.Context, err error, logger *logrus.Entry) {
 	apiErr := errorext.ToApiError(err)
 	logger.WithField("path", ctx.Request.URL.Path).

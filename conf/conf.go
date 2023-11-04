@@ -28,6 +28,14 @@ type AppConfig struct {
 		Name  string
 		Port  int
 	}
+
+	Secrets struct {
+		EncryptionKey []byte
+		Jwt           struct {
+			Issuer string
+			Secret string
+		}
+	}
 }
 
 func NewAppConfig() (*AppConfig, error) {
@@ -40,6 +48,8 @@ func NewAppConfig() (*AppConfig, error) {
 	if err := setApp(&cfg); err != nil {
 		return nil, err
 	}
+
+	setSecrets(&cfg)
 
 	return &cfg, nil
 }
@@ -99,6 +109,10 @@ func setApp(cfg *AppConfig) error {
 	cfg.App.Name = os.Getenv("APP_NAME")
 
 	return nil
+}
+
+func setSecrets(cfg *AppConfig) {
+	cfg.Secrets.EncryptionKey = []byte(os.Getenv("ENCRYPTION_KEY"))
 }
 
 func envConvertor[T any](envKey string, converter func(v string) (T, error)) (T, error) {

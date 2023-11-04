@@ -62,7 +62,8 @@ func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB) (*gin.Engine, error) {
 		return nil, err
 	}
 
-	controller.SetupUserRoutes(engine, setupUser(cfg, gormDb))
+	v1Group := engine.Group("/v1")
+	controller.SetupUserRoutes(v1Group, setupUser(cfg, gormDb))
 
 	return engine, nil
 }
