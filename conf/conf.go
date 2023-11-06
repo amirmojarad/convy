@@ -31,10 +31,13 @@ type AppConfig struct {
 
 	Secrets struct {
 		EncryptionKey []byte
-		Jwt           struct {
-			Issuer string
-			Secret string
-		}
+	}
+
+	TokenDetails struct {
+		Issuer        string
+		Secret        string
+		AtExpiresDays int
+		RtExpiresDays int
 	}
 }
 
@@ -50,6 +53,10 @@ func NewAppConfig() (*AppConfig, error) {
 	}
 
 	setSecrets(&cfg)
+
+	if err := setTokenDetails(&cfg); err != nil {
+		return nil, err
+	}
 
 	return &cfg, nil
 }
@@ -113,6 +120,29 @@ func setApp(cfg *AppConfig) error {
 
 func setSecrets(cfg *AppConfig) {
 	cfg.Secrets.EncryptionKey = []byte(os.Getenv("ENCRYPTION_KEY"))
+}
+
+func setTokenDetails(cfg *AppConfig) error {
+	var atExpiresDays, rtExpiresDays int
+
+	atExpiresDays, err := envConvertor("AT_EXPIRES_DAYS", func(v string) (int, error) {
+		return strconv.Atoi(v)
+	})
+	if err != nil {
+		return err
+	}
+
+	rtExpiresDays, err = envConvertor("RT_EXPIRES_DAYS", func(v string) (int, error) {
+		return strconv.Atoi(v)
+	})
+	if err != nil {
+		return err
+	}
+
+	cfg.TokenDetails.AtExpiresDays = atExpiresDays
+	cfg.TokenDetails.RtExpiresDays = rtExpiresDays
+
+	return nil
 }
 
 func envConvertor[T any](envKey string, converter func(v string) (T, error)) (T, error) {

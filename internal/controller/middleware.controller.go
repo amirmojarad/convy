@@ -1,17 +1,31 @@
 package controller
 
 import (
-	"convy/conf"
-	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"context"
+	"convy/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-const XAuthHeader = "Authorization"
+const (
+	XAuthHeader = "Authorization"
+	UserId      = "user_id"
+)
+
+type TokenService interface {
+	CreateTokenPair(ctx context.Context, req service.CreateTokenPairRequest) (service.CreateTokenPairResponse, error)
+	ValidateToken(ctx context.Context, req service.ValidateTokenRequest) (service.ValidateTokenResponse, error)
+	RefreshTokens(ctx context.Context, req service.RefreshTokensRequest) (service.RefreshTokensResponse, error)
+}
 
 type Middleware struct {
-	cfg *conf.AppConfig
+	tokenService TokenService
+}
+
+func NewMiddleware(tokenService TokenService) *Middleware {
+	return &Middleware{
+		tokenService: tokenService,
+	}
 }
 
 func (m Middleware) Auth() gin.HandlerFunc {
@@ -25,14 +39,7 @@ func (m Middleware) Auth() gin.HandlerFunc {
 			return
 		}
 
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method")
-			}
-
-			return []byte(m.cfg.Secrets.Jwt.Secret), nil
-		})
-
+		validateTokenResponse, err := m.tokenService.ValidateToken(nil, service.ValidateTokenRequest{Token: tokenString})
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
@@ -40,13 +47,14 @@ func (m Middleware) Auth() gin.HandlerFunc {
 			return
 		}
 
-		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-			c.Set("user", claims["username"])
+		if validateTokenResponse.Valid {
+			c.Set(UserId, validateTokenResponse.Claims[UserId])
+
 			c.Next()
 		} else {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+
 			c.Abort()
 		}
-
 	}
 }
