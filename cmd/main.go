@@ -64,6 +64,7 @@ func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB) (*gin.Engine, error) {
 
 	v1Group := engine.Group("/v1")
 	controller.SetupUserRoutes(v1Group, setupUser(cfg, gormDb))
+	controller.SetupUserFollowRoutes(v1Group, setupUserFollow(cfg, gormDb), setupMiddleware(cfg))
 
 	return engine, nil
 }
@@ -79,6 +80,27 @@ func setupUser(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.User {
 		userSvc,
 	)
 	return userCtrl
+}
+
+func setupMiddleware(cfg *conf.AppConfig) *controller.Middleware {
+	tokenSvc := service.NewToken(cfg)
+	return controller.NewMiddleware(tokenSvc)
+}
+
+func setupUserFollow(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.UserFollow {
+	ufRepository := repository.NewUserFollow(gormDb)
+
+	ufSvc := service.NewUserFollow(cfg,
+		logger.GetLogger().WithField("name", "user_follow-service"),
+		ufRepository,
+	)
+
+	ufCtrl := controller.NewUserFollow(cfg,
+		logger.GetLogger().WithField("name", "user_follow-controller"),
+		ufSvc,
+	)
+
+	return ufCtrl
 }
 
 func getGormDB(_ *conf.AppConfig, sqlDB *sql.DB) (*gorm.DB, error) {
