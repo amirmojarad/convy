@@ -2,7 +2,7 @@ package controller
 
 import (
 	"context"
-	"convy/internal/service"
+	"convy/internal/service/auth"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -13,9 +13,9 @@ const (
 )
 
 type TokenService interface {
-	CreateTokenPair(ctx context.Context, req service.CreateTokenPairRequest) (service.CreateTokenPairResponse, error)
-	ValidateToken(ctx context.Context, req service.ValidateTokenRequest) (service.ValidateTokenResponse, error)
-	RefreshTokens(ctx context.Context, req service.RefreshTokensRequest) (service.RefreshTokensResponse, error)
+	CreateTokenPair(ctx context.Context, req auth.CreateTokenPairRequest) (auth.CreateTokenPairResponse, error)
+	ValidateToken(ctx context.Context, req auth.ValidateTokenRequest) (auth.ValidateTokenResponse, error)
+	RefreshTokens(ctx context.Context, req auth.RefreshTokensRequest) (auth.RefreshTokensResponse, error)
 }
 
 type Middleware struct {
@@ -39,7 +39,7 @@ func (m Middleware) Auth() gin.HandlerFunc {
 			return
 		}
 
-		validateTokenResponse, err := m.tokenService.ValidateToken(nil, service.ValidateTokenRequest{Token: tokenString})
+		validateTokenResponse, err := m.tokenService.ValidateToken(nil, auth.ValidateTokenRequest{Token: tokenString})
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()

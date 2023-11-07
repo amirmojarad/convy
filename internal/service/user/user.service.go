@@ -1,10 +1,11 @@
-package service
+package user
 
 import (
 	"context"
 	"convy/conf"
 	"convy/internal/errorext"
 	"convy/internal/repository"
+	"convy/internal/service"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,7 +39,7 @@ func (u UserService) CreateUser(ctx context.Context, req CreateUserRequest) (Cre
 			errorext.NewValidationError("user with email %s already exists", fetchedUser.Email)
 	}
 
-	req.Password, err = HashPassword(req.Password)
+	req.Password, err = service.HashPassword(req.Password)
 	if err != nil {
 		return CreateUserResponse{}, err
 	}
@@ -52,7 +53,7 @@ func (u UserService) CreateUser(ctx context.Context, req CreateUserRequest) (Cre
 }
 
 func (u UserService) GetUser(ctx context.Context, req GetUserRequest) (GetUserResponse, error) {
-	_, err := NewValidation().
+	_, err := service.NewValidation().
 		SetUsername(req.Username).
 		SetEmail(req.Email).
 		SetPassword(req.Password).
@@ -69,7 +70,7 @@ func (u UserService) GetUser(ctx context.Context, req GetUserRequest) (GetUserRe
 		return GetUserResponse{}, err
 	}
 
-	if !CheckPasswordHash(req.Password, fetchedUser.HashedPassword) {
+	if !service.CheckPasswordHash(req.Password, fetchedUser.HashedPassword) {
 		return GetUserResponse{}, errorext.NewValidationError("password is invalid")
 	}
 

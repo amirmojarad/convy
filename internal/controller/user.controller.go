@@ -3,19 +3,19 @@ package controller
 import (
 	"context"
 	"convy/conf"
-	"convy/internal/service"
+	"convy/internal/service/user"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type UserService interface {
-	GetUserDetail(ctx context.Context, req service.GetUserDetailRequest) (service.GetUserDetailResponse, error)
-	UpdatePassword(ctx context.Context, req service.UpdatePasswordRequest) (service.UpdatePasswordResponse, error)
-	UpdateUserInformation(ctx context.Context, req service.UpdateUserInformationRequest) (
-		service.UpdateUserInformationResponse, error)
-	GetUser(ctx context.Context, req service.GetUserRequest) (service.GetUserResponse, error)
-	CreateUser(ctx context.Context, req service.CreateUserRequest) (service.CreateUserResponse, error)
+	GetUserDetail(ctx context.Context, req user.GetUserDetailRequest) (user.GetUserDetailResponse, error)
+	UpdatePassword(ctx context.Context, req user.UpdatePasswordRequest) (user.UpdatePasswordResponse, error)
+	UpdateUserInformation(ctx context.Context, req user.UpdateUserInformationRequest) (
+		user.UpdateUserInformationResponse, error)
+	GetUser(ctx context.Context, req user.GetUserRequest) (user.GetUserResponse, error)
+	CreateUser(ctx context.Context, req user.CreateUserRequest) (user.CreateUserResponse, error)
 }
 
 type User struct {
@@ -41,7 +41,7 @@ func (u User) Signup(ctx *gin.Context) {
 		return
 	}
 
-	response, err := u.svc.CreateUser(ctx.Request.Context(), service.CreateUserRequest(req))
+	response, err := u.svc.CreateUser(ctx.Request.Context(), user.CreateUserRequest(req))
 	if err != nil {
 		WriteErrorResponse(ctx, err, u.logger)
 

@@ -3,15 +3,15 @@ package controller
 import (
 	"context"
 	"convy/conf"
-	"convy/internal/service"
+	"convy/internal/service/user_follow"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
 type UserFollowService interface {
-	UnFollow(ctx context.Context, req service.UnFollowRequest) (service.UnFollowResponse, error)
-	Follow(ctx context.Context, req service.FollowRequest) (service.FollowResponse, error)
+	UnFollow(ctx context.Context, req user_follow.UnFollowRequest) (user_follow.UnFollowResponse, error)
+	Follow(ctx context.Context, req user_follow.FollowRequest) (user_follow.FollowResponse, error)
 }
 
 type UserFollow struct {
@@ -37,7 +37,7 @@ func (f UserFollow) Follow(ctx *gin.Context) {
 		return
 	}
 
-	response, err := f.svc.Follow(ctx, service.FollowRequest(req))
+	response, err := f.svc.Follow(ctx, user_follow.FollowRequest(req))
 	if err != nil {
 		return
 	}
@@ -54,7 +54,7 @@ func (f UserFollow) UnFollow(ctx *gin.Context) {
 		return
 	}
 
-	response, err := f.svc.UnFollow(ctx, service.UnFollowRequest(req))
+	response, err := f.svc.UnFollow(ctx, user_follow.UnFollowRequest(req))
 	if err != nil {
 		return
 	}
