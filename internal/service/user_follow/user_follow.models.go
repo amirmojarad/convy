@@ -1,4 +1,4 @@
-package service
+package user_follow
 
 type UnFollowResponse struct {
 }

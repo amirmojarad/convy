@@ -6,7 +6,9 @@ import (
 	"convy/internal/controller"
 	"convy/internal/logger"
 	"convy/internal/repository"
-	"convy/internal/service"
+	"convy/internal/service/auth"
+	"convy/internal/service/user"
+	"convy/internal/service/user_follow"
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -71,7 +73,7 @@ func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB) (*gin.Engine, error) {
 
 func setupUser(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.User {
 	userRepository := repository.NewUser(gormDb)
-	userSvc := service.NewUser(cfg,
+	userSvc := user.NewUser(cfg,
 		logger.GetLogger().WithField("name", "user-service"),
 		userRepository,
 	)
@@ -83,14 +85,14 @@ func setupUser(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.User {
 }
 
 func setupMiddleware(cfg *conf.AppConfig) *controller.Middleware {
-	tokenSvc := service.NewToken(cfg)
+	tokenSvc := auth.NewToken(cfg)
 	return controller.NewMiddleware(tokenSvc)
 }
 
 func setupUserFollow(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.UserFollow {
 	ufRepository := repository.NewUserFollow(gormDb)
 
-	ufSvc := service.NewUserFollow(cfg,
+	ufSvc := user_follow.NewUserFollow(cfg,
 		logger.GetLogger().WithField("name", "user_follow-service"),
 		ufRepository,
 	)
