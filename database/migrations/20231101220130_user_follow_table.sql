@@ -14,6 +14,7 @@ SELECT 'up SQL query';
 -- +goose StatementEnd
 
 -- +goose Down
+drop table user_follow;
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd

@@ -13,6 +13,7 @@ SELECT 'up SQL query';
 -- +goose StatementEnd
 
 -- +goose Down
+drop table tokens;
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
