@@ -16,6 +16,7 @@ SELECT 'up SQL query';
 -- +goose StatementEnd
 
 -- +goose Down
+drop table users;
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd
