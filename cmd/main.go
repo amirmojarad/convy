@@ -42,10 +42,6 @@ func runServer() error {
 		return err
 	}
 
-	if err = goose.Down(sqlDb, cfg.Database.MigrationPath); err != nil {
-		return err
-	}
-
 	if err = goose.Up(sqlDb, cfg.Database.MigrationPath); err != nil {
 		return err
 	}
