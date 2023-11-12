@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func Connect(cfg *conf.AppConfig) (*sql.DB, error) {
+func ConnectToPostgres(cfg *conf.AppConfig) (*sql.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
 		cfg.Database.Host,
 		cfg.Database.Username,
