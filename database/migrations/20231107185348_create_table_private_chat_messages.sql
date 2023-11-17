@@ -10,13 +10,14 @@ create table if not exists pr_chat_messages(
     deleted_at timestamp default null,
     constraint fk_private_chat_id foreign key (private_chat_id) references private_chat(id) on delete cascade,
     constraint fk_sender_id foreign key (sender_id) references users(id) on delete no action,
-    constraint fk_sender_id foreign key (receiver_id) references users(id) on delete no action
+    constraint fk_receiver_id foreign key (receiver_id) references users(id) on delete no action
 );
 -- +goose StatementBegin
 SELECT 'up SQL query';
 -- +goose StatementEnd
 
 -- +goose Down
+drop table pr_chat_messages;
 -- +goose StatementBegin
 SELECT 'down SQL query';
 -- +goose StatementEnd

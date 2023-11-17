@@ -3,43 +3,45 @@ package private_chat
 import (
 	"context"
 	"convy/conf"
+	repository "convy/internal/repository/private_chat"
+	"convy/internal/service"
 	"github.com/sirupsen/logrus"
 )
 
-type PrivateChatRepository struct {
-}
-
-type PrivateChatMessageRepository struct {
+type PrivateChatRepository interface {
+	CreatePrivateChat(ctx context.Context, req repository.CreatePrivateChatRequest) (repository.CreatePrivateChatResponse, error)
+	GetUsersPrivateChats(ctx context.Context, req repository.GetUserPrivateChatsResponse) (repository.GetUserPrivateChatsResponse, error)
+	DeletePrivateChat(ctx context.Context, req repository.DeletePrivateChatRequest) error
 }
 
 type PrivateChat struct {
-	cfg           *conf.AppConfig
-	logger        *logrus.Entry
-	prRepository  PrivateChatRepository
-	prmRepository PrivateChatMessageRepository
+	cfg          *conf.AppConfig
+	logger       *logrus.Entry
+	prRepository PrivateChatRepository
 }
 
 func NewPrivateChat(cfg *conf.AppConfig,
 	logger *logrus.Entry,
-	prRepository PrivateChatRepository,
-	prmRepository PrivateChatMessageRepository) *PrivateChat {
+	prRepository PrivateChatRepository) *PrivateChat {
 	return &PrivateChat{
-		cfg:           cfg,
-		logger:        logger,
-		prmRepository: prmRepository,
-		prRepository:  prRepository,
+		cfg:          cfg,
+		logger:       logger,
+		prRepository: prRepository,
 	}
 }
 
 func (pc PrivateChat) CreatePrivateChat(ctx context.Context, req CreateRequest) (
 	CreateResponse, error) {
-	return CreateResponse{}, nil
-}
+	if _, err := service.NewValidation().SetIds(req.SecondUserId, req.FirstUserId).Validate(); err != nil {
+		return CreateResponse{}, nil
+	}
 
-func (pc PrivateChat) GetAllMessages(ctx context.Context, req GetAllMessagesRequest) (GetAllMessagesResponse, error) {
-	return GetAllMessagesResponse{}, nil
-}
+	privateChat, err := pc.prRepository.CreatePrivateChat(ctx, toRepoCreatePrivateChatRequest(req))
+	if err != nil {
+		return CreateResponse{}, err
+	}
 
-func (pc PrivateChat) AddMessage(ctx context.Context, req AddMessageRequest) (AddMessageResponse, error) {
-	return AddMessageResponse{}, nil
+	return CreateResponse{
+		Id: privateChat.Id,
+	}, nil
 }
