@@ -10,17 +10,31 @@ import (
 
 type AppConfig struct {
 	Database struct {
-		Name                  string
-		Port                  int
-		Host                  string
-		Password              string
-		Username              string
-		SslMode               string
-		Timezone              string
-		MaxIdleConnections    int
-		MaxOpenConnections    int
-		ConnectionMaxLifetime time.Duration
-		MigrationPath         string
+		Mongo struct {
+			Username          string
+			Password          string
+			Host              string
+			Port              string
+			ConnectionOptions struct {
+				Timeout           int
+				ConnectionTimeout int
+				MaxPoolSize       string
+				W                 string
+			}
+		}
+		Postgres struct {
+			Name                  string
+			Port                  int
+			Host                  string
+			Password              string
+			Username              string
+			SslMode               string
+			Timezone              string
+			MaxIdleConnections    int
+			MaxOpenConnections    int
+			ConnectionMaxLifetime time.Duration
+			MigrationPath         string
+		}
 	}
 
 	App struct {
@@ -44,7 +58,7 @@ type AppConfig struct {
 func NewAppConfig() (*AppConfig, error) {
 	var cfg AppConfig
 
-	if err := setDatabase(&cfg); err != nil {
+	if err := setPostgres(&cfg); err != nil {
 		return nil, err
 	}
 
@@ -58,14 +72,18 @@ func NewAppConfig() (*AppConfig, error) {
 		return nil, err
 	}
 
+	if err := setMongoDb(&cfg); err != nil {
+		return nil, err
+	}
+
 	return &cfg, nil
 }
 
-func setDatabase(cfg *AppConfig) error {
-	cfg.Database.Username = os.Getenv("DATABASE_POSTGRES_USERNAME")
-	cfg.Database.Password = os.Getenv("DATABASE_POSTGRES_PASSWORD")
-	cfg.Database.Host = os.Getenv("DATABASE_POSTGRES_HOST")
-	cfg.Database.Name = os.Getenv("DATABASE_POSTGRES_NAME")
+func setPostgres(cfg *AppConfig) error {
+	cfg.Database.Postgres.Username = os.Getenv("DATABASE_POSTGRES_USERNAME")
+	cfg.Database.Postgres.Password = os.Getenv("DATABASE_POSTGRES_PASSWORD")
+	cfg.Database.Postgres.Host = os.Getenv("DATABASE_POSTGRES_HOST")
+	cfg.Database.Postgres.Name = os.Getenv("DATABASE_POSTGRES_NAME")
 
 	port, err := envConvertor("DATABASE_POSTGRES_PORT", func(v string) (uint64, error) {
 		return strconv.ParseUint(v, 10, 32)
@@ -74,33 +92,58 @@ func setDatabase(cfg *AppConfig) error {
 		return err
 	}
 
-	cfg.Database.Port = int(port)
+	cfg.Database.Postgres.Port = int(port)
 
-	cfg.Database.SslMode = os.Getenv("DATABASE_POSTGRES_SSLMODE")
-	cfg.Database.Timezone = os.Getenv("DATABASE_POSTGRES_TIMEZONE")
+	cfg.Database.Postgres.SslMode = os.Getenv("DATABASE_POSTGRES_SSLMODE")
+	cfg.Database.Postgres.Timezone = os.Getenv("DATABASE_POSTGRES_TIMEZONE")
 
 	maxConn, err := envConvertor("DATABASE_POSTGRES_MAX_OPEN_CONN", strconv.Atoi)
 	if err != nil {
 		return err
 	}
 
-	cfg.Database.MaxOpenConnections = maxConn
+	cfg.Database.Postgres.MaxOpenConnections = maxConn
 
 	maxIdle, err := envConvertor("DATABASE_POSTGRES_MAX_IDLE_CONN", strconv.Atoi)
 	if err != nil {
 		return err
 	}
 
-	cfg.Database.MaxIdleConnections = maxIdle
+	cfg.Database.Postgres.MaxIdleConnections = maxIdle
 
 	connMaxLif, err := envConvertor("DATABASE_POSTGRES_CONN_MAX_LIFETIME", time.ParseDuration)
 	if err != nil {
 		return err
 	}
 
-	cfg.Database.ConnectionMaxLifetime = connMaxLif
+	cfg.Database.Postgres.ConnectionMaxLifetime = connMaxLif
 
-	cfg.Database.MigrationPath = os.Getenv("DATABASE_POSTGRES_MIGRATION_PATH")
+	cfg.Database.Postgres.MigrationPath = os.Getenv("DATABASE_POSTGRES_MIGRATION_PATH")
+
+	return nil
+}
+
+func setMongoDb(cfg *AppConfig) error {
+	cfg.Database.Mongo.Password = os.Getenv("DATABASE_MONGO_PASSWORD")
+	cfg.Database.Mongo.Host = os.Getenv("DATABASE_MONGO_HOST")
+	cfg.Database.Mongo.Username = os.Getenv("DATABASE_MONGO_USERNAME")
+	cfg.Database.Mongo.Port = os.Getenv("DATABASE_MONGO_PORT")
+
+	timeout, err := envConvertor("DATABASE_MONGO_TIMEOUT", strconv.Atoi)
+	if err != nil {
+		return err
+	}
+
+	connectionTimeout, err := envConvertor("DATABASE_MONGO_CONNECTION_TIMEOUT", strconv.Atoi)
+	if err != nil {
+		return err
+	}
+
+	cfg.Database.Mongo.ConnectionOptions.Timeout = timeout
+	cfg.Database.Mongo.ConnectionOptions.ConnectionTimeout = connectionTimeout
+
+	cfg.Database.Mongo.ConnectionOptions.MaxPoolSize = os.Getenv("DATABASE_MONGO_MAX_POOL_SIZE")
+	cfg.Database.Mongo.ConnectionOptions.W = os.Getenv("DATABASE_MONGO_MAX_WRITE_CONCERNS")
 
 	return nil
 }
