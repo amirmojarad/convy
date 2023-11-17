@@ -24,7 +24,6 @@ func main() {
 
 		return
 	}
-
 }
 
 func runServer() error {
@@ -33,7 +32,7 @@ func runServer() error {
 		return err
 	}
 
-	sqlDb, err := database.Connect(cfg)
+	sqlDb, err := database.ConnectToPostgres(cfg)
 	if err != nil {
 		return err
 	}
@@ -42,7 +41,7 @@ func runServer() error {
 		return err
 	}
 
-	if err = goose.Up(sqlDb, cfg.Database.MigrationPath); err != nil {
+	if err = goose.Up(sqlDb, cfg.Database.Postgres.MigrationPath); err != nil {
 		return err
 	}
 

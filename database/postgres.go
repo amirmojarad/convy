@@ -8,13 +8,13 @@ import (
 
 func ConnectToPostgres(cfg *conf.AppConfig) (*sql.DB, error) {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
-		cfg.Database.Host,
-		cfg.Database.Username,
-		cfg.Database.Password,
-		cfg.Database.Name,
-		cfg.Database.Port,
-		cfg.Database.SslMode,
-		cfg.Database.Timezone,
+		cfg.Database.Postgres.Host,
+		cfg.Database.Postgres.Username,
+		cfg.Database.Postgres.Password,
+		cfg.Database.Postgres.Name,
+		cfg.Database.Postgres.Port,
+		cfg.Database.Postgres.SslMode,
+		cfg.Database.Postgres.Timezone,
 	)
 
 	sqlDB, err := sql.Open("pgx", dsn)
@@ -22,9 +22,9 @@ func ConnectToPostgres(cfg *conf.AppConfig) (*sql.DB, error) {
 		return nil, err
 	}
 
-	sqlDB.SetMaxIdleConns(cfg.Database.MaxIdleConnections)
-	sqlDB.SetMaxOpenConns(cfg.Database.MaxOpenConnections)
-	sqlDB.SetConnMaxLifetime(cfg.Database.ConnectionMaxLifetime)
+	sqlDB.SetMaxIdleConns(cfg.Database.Postgres.MaxIdleConnections)
+	sqlDB.SetMaxOpenConns(cfg.Database.Postgres.MaxOpenConnections)
+	sqlDB.SetConnMaxLifetime(cfg.Database.Postgres.ConnectionMaxLifetime)
 
 	return sqlDB, err
 }
