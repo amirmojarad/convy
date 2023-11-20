@@ -1,4 +1,4 @@
-package private_chat
+package service
 
 type Message struct {
 	SenderId      uint

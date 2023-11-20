@@ -16,9 +16,8 @@ type AppConfig struct {
 			Host              string
 			Port              string
 			ConnectionOptions struct {
-				Timeout           int
-				ConnectionTimeout int
-				MaxPoolSize       string
+				ConnectionTimeout time.Duration
+				MaxPoolSize       uint64
 				W                 string
 			}
 		}
@@ -129,20 +128,18 @@ func setMongoDb(cfg *AppConfig) error {
 	cfg.Database.Mongo.Username = os.Getenv("DATABASE_MONGO_USERNAME")
 	cfg.Database.Mongo.Port = os.Getenv("DATABASE_MONGO_PORT")
 
-	timeout, err := envConvertor("DATABASE_MONGO_TIMEOUT", strconv.Atoi)
-	if err != nil {
-		return err
-	}
-
 	connectionTimeout, err := envConvertor("DATABASE_MONGO_CONNECTION_TIMEOUT", strconv.Atoi)
 	if err != nil {
 		return err
 	}
 
-	cfg.Database.Mongo.ConnectionOptions.Timeout = timeout
-	cfg.Database.Mongo.ConnectionOptions.ConnectionTimeout = connectionTimeout
+	maxPoolSize, err := envConvertor("DATABASE_MONGO_MAX_POOL_SIZE", strconv.Atoi)
+	if err != nil {
+		return err
+	}
 
-	cfg.Database.Mongo.ConnectionOptions.MaxPoolSize = os.Getenv("DATABASE_MONGO_MAX_POOL_SIZE")
+	cfg.Database.Mongo.ConnectionOptions.ConnectionTimeout = time.Duration(connectionTimeout * int(time.Minute))
+	cfg.Database.Mongo.ConnectionOptions.MaxPoolSize = uint64(maxPoolSize)
 	cfg.Database.Mongo.ConnectionOptions.W = os.Getenv("DATABASE_MONGO_MAX_WRITE_CONCERNS")
 
 	return nil

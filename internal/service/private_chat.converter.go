@@ -1,4 +1,4 @@
-package private_chat
+package service
 
 import repository "convy/internal/repository/private_chat"
 

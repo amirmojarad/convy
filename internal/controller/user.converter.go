@@ -1,23 +1,23 @@
 package controller
 
 import (
-	"convy/internal/service/user"
+	"convy/internal/service"
 )
 
-func toViewSignupResponse(resp user.CreateUserResponse) SignupResponse {
+func toViewSignupResponse(resp service.CreateUserResponse) SignupResponse {
 	return SignupResponse{
 		UserModel: UserModel(resp.UserModel),
 	}
 }
 
-func toSvcGetUserRequest(req LoginRequest) user.GetUserRequest {
-	return user.GetUserRequest{
+func toSvcGetUserRequest(req LoginRequest) service.GetUserRequest {
+	return service.GetUserRequest{
 		Username: req.Username,
 		Password: req.Password,
 	}
 }
 
-func toViewLoginResponse(resp user.GetUserResponse) LoginResponse {
+func toViewLoginResponse(resp service.GetUserResponse) LoginResponse {
 	return LoginResponse{
 		UserModel: UserModel(resp.UserModel),
 	}

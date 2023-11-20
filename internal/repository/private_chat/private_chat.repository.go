@@ -3,16 +3,19 @@ package private_chat
 import (
 	"context"
 	"github.com/pkg/errors"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
 type PrivateChat struct {
-	db *gorm.DB
+	psqlDb  *gorm.DB
+	mongoDb *mongo.Client
 }
 
-func NewPrivateChat(db *gorm.DB) *PrivateChat {
+func NewPrivateChat(psqlDb *gorm.DB, mongoDb *mongo.Client) *PrivateChat {
 	return &PrivateChat{
-		db: db,
+		psqlDb:  psqlDb,
+		mongoDb: mongoDb,
 	}
 }
 
@@ -23,7 +26,7 @@ func (pc PrivateChat) CreatePrivateChat(ctx context.Context, req CreatePrivateCh
 		SecondUser: req.SecondUserId,
 	}
 
-	if err := pc.db.WithContext(ctx).Create(&pcModel).Error; err != nil {
+	if err := pc.psqlDb.WithContext(ctx).Create(&pcModel).Error; err != nil {
 		return CreatePrivateChatResponse{}, errors.WithStack(err)
 	}
 
