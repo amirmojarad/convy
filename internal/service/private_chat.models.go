@@ -1,6 +1,6 @@
 package service
 
-type Message struct {
+type PrivateChatMessage struct {
 	SenderId      uint
 	ReceiverId    uint
 	PrivateChatId uint
@@ -30,11 +30,13 @@ type AddMessageResponse struct {
 	Message string
 }
 
-type GetAllMessagesRequest struct {
+type MessageRequest struct {
+	PrivateChatMessage
+}
+
+type GetMessagesRequest struct {
 	PrivateChatId uint
 }
 
-type GetAllMessagesResponse struct {
-	Messages      []Message
-	PrivateChatId uint
+type GetMessagesResponse struct {
 }

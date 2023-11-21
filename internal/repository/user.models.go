@@ -22,4 +22,5 @@ func (UserModel) TableName() string {
 type GetUserRequest struct {
 	Email    string
 	Username string
+	Id       uint
 }

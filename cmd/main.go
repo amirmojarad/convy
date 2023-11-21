@@ -6,7 +6,6 @@ import (
 	"convy/internal/controller"
 	"convy/internal/logger"
 	"convy/internal/repository"
-	"convy/internal/repository/private_chat"
 	"convy/internal/service"
 	"database/sql"
 	"fmt"
@@ -77,7 +76,7 @@ func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB, mongoClient *mongo.Client) 
 }
 
 func setupPrivateChat(cfg *conf.AppConfig, gormDb *gorm.DB, mongoClient *mongo.Client) *controller.PrivateChat {
-	prChatRepo := private_chat.NewPrivateChat(gormDb, mongoClient)
+	prChatRepo := repository.NewPrivateChat(gormDb, mongoClient)
 	prChatSvc := service.NewPrivateChat(
 		cfg,
 		logger.GetLogger().WithField("name", "private_chat-service"),

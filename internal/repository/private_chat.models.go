@@ -1,4 +1,4 @@
-package private_chat
+package repository
 
 import "gorm.io/gorm"
 

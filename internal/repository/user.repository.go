@@ -36,6 +36,10 @@ func (u User) GetUser(ctx context.Context, req GetUserRequest) (UserModel, error
 		query = query.Where("username = ?", req.Username)
 	}
 
+	if req.Id > 0 {
+		query = query.Where("id = ?", req.Id)
+	}
+
 	if err := query.Find(&userModel).Error; err != nil {
 		return UserModel{}, err
 	}

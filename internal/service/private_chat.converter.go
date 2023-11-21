@@ -1,6 +1,8 @@
 package service
 
-import repository "convy/internal/repository/private_chat"
+import (
+	"convy/internal/repository"
+)
 
 func toRepoCreatePrivateChatRequest(req CreateRequest) repository.CreatePrivateChatRequest {
 	return repository.CreatePrivateChatRequest{
