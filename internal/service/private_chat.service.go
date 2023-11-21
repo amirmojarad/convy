@@ -1,10 +1,9 @@
-package private_chat
+package service
 
 import (
 	"context"
 	"convy/conf"
 	repository "convy/internal/repository/private_chat"
-	"convy/internal/service"
 	"github.com/sirupsen/logrus"
 )
 
@@ -32,7 +31,7 @@ func NewPrivateChat(cfg *conf.AppConfig,
 
 func (pc PrivateChat) CreatePrivateChat(ctx context.Context, req CreateRequest) (
 	CreateResponse, error) {
-	if _, err := service.NewValidation().SetIds(req.SecondUserId, req.FirstUserId).Validate(); err != nil {
+	if _, err := NewValidation().SetIds(req.SecondUserId, req.FirstUserId).Validate(); err != nil {
 		return CreateResponse{}, nil
 	}
 

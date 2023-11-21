@@ -6,14 +6,14 @@ import (
 	"convy/internal/controller"
 	"convy/internal/logger"
 	"convy/internal/repository"
-	"convy/internal/service/auth"
-	"convy/internal/service/user"
-	"convy/internal/service/user_follow"
+	"convy/internal/repository/private_chat"
+	"convy/internal/service"
 	"database/sql"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/gin-gonic/gin"
 	goose "github.com/pressly/goose/v3"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -37,6 +37,11 @@ func runServer() error {
 		return err
 	}
 
+	mongoClient, err := database.ConnectToMongoDb(cfg)
+	if err != nil {
+		return err
+	}
+
 	if err := goose.SetDialect("postgres"); err != nil {
 		return err
 	}
@@ -45,7 +50,7 @@ func runServer() error {
 		return err
 	}
 
-	routerEngine, err := setupRouter(cfg, sqlDb)
+	routerEngine, err := setupRouter(cfg, sqlDb, mongoClient)
 	if err != nil {
 		return err
 	}
@@ -55,7 +60,7 @@ func runServer() error {
 	return routerEngine.Run(fmt.Sprintf(":%d", cfg.App.Port))
 }
 
-func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB) (*gin.Engine, error) {
+func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB, mongoClient *mongo.Client) (*gin.Engine, error) {
 	engine := gin.New()
 
 	gormDb, err := getGormDB(cfg, sqlDB)
@@ -66,32 +71,47 @@ func setupRouter(cfg *conf.AppConfig, sqlDB *sql.DB) (*gin.Engine, error) {
 	v1Group := engine.Group("/v1")
 	controller.SetupUserRoutes(v1Group, setupUser(cfg, gormDb))
 	controller.SetupUserFollowRoutes(v1Group, setupUserFollow(cfg, gormDb), setupMiddleware(cfg))
+	controller.SetupPrivateChatRoutes(v1Group, setupPrivateChat(cfg, gormDb, mongoClient), setupMiddleware(cfg))
 
 	return engine, nil
 }
 
+func setupPrivateChat(cfg *conf.AppConfig, gormDb *gorm.DB, mongoClient *mongo.Client) *controller.PrivateChat {
+	prChatRepo := private_chat.NewPrivateChat(gormDb, mongoClient)
+	prChatSvc := service.NewPrivateChat(
+		cfg,
+		logger.GetLogger().WithField("name", "private_chat-service"),
+		prChatRepo,
+	)
+	return controller.NewPrivateChat(
+		cfg,
+		logger.GetLogger().WithField("name", "private_chat-controller"),
+		prChatSvc,
+	)
+}
+
 func setupUser(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.User {
 	userRepository := repository.NewUser(gormDb)
-	userSvc := user.NewUser(cfg,
+	userSvc := service.NewUser(cfg,
 		logger.GetLogger().WithField("name", "user-service"),
 		userRepository,
 	)
-	userCtrl := controller.NewUser(cfg,
+
+	return controller.NewUser(cfg,
 		logger.GetLogger().WithField("name", "user-controller"),
 		userSvc,
 	)
-	return userCtrl
 }
 
 func setupMiddleware(cfg *conf.AppConfig) *controller.Middleware {
-	tokenSvc := auth.NewToken(cfg)
+	tokenSvc := service.NewToken(cfg)
 	return controller.NewMiddleware(tokenSvc)
 }
 
 func setupUserFollow(cfg *conf.AppConfig, gormDb *gorm.DB) *controller.UserFollow {
 	ufRepository := repository.NewUserFollow(gormDb)
 
-	ufSvc := user_follow.NewUserFollow(cfg,
+	ufSvc := service.NewUserFollow(cfg,
 		logger.GetLogger().WithField("name", "user_follow-service"),
 		ufRepository,
 	)

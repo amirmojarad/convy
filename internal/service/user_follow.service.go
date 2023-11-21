@@ -1,4 +1,4 @@
-package user_follow
+package service
 
 import (
 	"context"
